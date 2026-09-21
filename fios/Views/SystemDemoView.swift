@@ -12,6 +12,9 @@ struct SystemDemoView: View {
                 NavigationLink("sw3. 导航与路由（path 数组即导航栈）") {
                     NavDemoView()   // 自带独立 NavigationStack（嵌套栈：内层自己的 push/pop 内层消化）
                 }
+                NavigationLink("s11. WebView Hybrid（双向通信 + 事件链）") {
+                    WebHybridDemoView()   // 远程页导航事件链 + 内嵌测试页 JS 双向通信闭环
+                }
             }
             .navigationTitle("System Demo")
         }
