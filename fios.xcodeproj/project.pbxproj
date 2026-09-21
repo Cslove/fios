@@ -6,6 +6,11 @@
 	objectVersion = 90;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		337811803060DE8D004F7B17 /* Networking in Frameworks */ = {isa = PBXBuildFile; productRef = 3378117F3060DE8D004F7B17 /* Networking */; };
+		337811833060E0E7004F7B17 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 337811823060E0E7004F7B17 /* Kingfisher */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		000000000000000000000120 /* fios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = fios.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -22,6 +27,8 @@
 		000000000000000130000000 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				337811833060E0E7004F7B17 /* Kingfisher in Frameworks */,
+				337811803060DE8D004F7B17 /* Networking in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -60,6 +67,10 @@
 				000000000000000000000010 /* fios */,
 			);
 			name = fios;
+			packageProductDependencies = (
+				3378117F3060DE8D004F7B17 /* Networking */,
+				337811823060E0E7004F7B17 /* Kingfisher */,
+			);
 			productName = MyApp;
 			productReference = 000000000000000000000120 /* fios.app */;
 			productType = "com.apple.product-type.application";
@@ -88,6 +99,10 @@
 			);
 			mainGroup = 000000000000000000000001;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				3378117E3060DE8D004F7B17 /* XCLocalSwiftPackageReference "Networking" */,
+				337811813060E0E7004F7B17 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+			);
 			preferredProjectObjectVersion = 90;
 			productRefGroup = 000000000000000000000020 /* Products */;
 			projectDirPath = "";
@@ -341,6 +356,36 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		3378117E3060DE8D004F7B17 /* XCLocalSwiftPackageReference "Networking" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Networking;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		337811813060E0E7004F7B17 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.12.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3378117F3060DE8D004F7B17 /* Networking */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Networking;
+		};
+		337811823060E0E7004F7B17 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 337811813060E0E7004F7B17 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 000000000000000000000000 /* Project object */;
 }
