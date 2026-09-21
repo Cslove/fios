@@ -69,8 +69,14 @@ struct WebViewBridge: UIViewRepresentable {
         return webView
     }
 
-    /// 同步状态——SwiftUI 状态变了、body 重算时被调（可高频）：UIKit 视图不会自己变，
+    /// 同步状态——SwiftUI 状态变、body 重算时被调（可高频）：UIKit 视图不会自己变，
 /// 这个方法把 SwiftUI 世界的变化翻译成 UIKit 世界的方法调用。
+/// ⚠️ 经典坑（闭包/属性同理）：makeCoordinator 只跑一次，建桥时捕获的 onScriptMessage 闭包
+/// 终身不变——之后视图重建传进来新闭包，管家手里还是旧的。要同步必须在这里手动刷：
+///     context.coordinator.onMessage = onScriptMessage
+/// 本 demo 没刷也没事：闭包只碰 log（引用类型、@Observable 类实例），新旧闭包指向同一个 log；
+/// 但若闭包捕获值类型快照（如某个 Int 状态），就会一直用到旧值——这就是「一次性的进 make、
+/// 会变的进 update」纪律的完整含义。
 /// load 写这不写 make 的原因：make 之后 SwiftUI 会立即调一次 update，首次加载自然发生在这里，
 /// 「装载」统一走同步入口。
     func updateUIView(_ webView: WKWebView, context: Context) {
