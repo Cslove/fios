@@ -6,6 +6,9 @@ struct SystemDemoView: View {
     var body: some View {
         NavigationStack {
             List {
+                NavigationLink("9. 现代 Swift 并发（async/await / Task / @MainActor / actor）") {
+                    ConcurrencyDemoView()   // 模块九：并发语法、主线程守护、actor 安全计数
+                }
                 NavigationLink("s1. App 生命周期（scenePhase 三态实测）") {
                     ContentView()   // 原「生命周期」tab 的内容（s1 第 3 节测试代码）
                 }
