@@ -261,7 +261,6 @@ struct NetworkingDemoView: View {
         Section("⑦ SSE 流式输出：AI 打字机效果") {
             Text("模型输出：\(sseText)")
                 .font(.body.monospaced())
-                .lineLimit(3)
             if sseRunning {
                 HStack { Text("生成中…"); Spacer(); ProgressView() }
             }
@@ -353,13 +352,26 @@ struct TodoDetailView: View {
 
 // MARK: - Mock SSE 服务（URLProtocol 拦截，无需真后端/真 key）
 
-// 原理：URLProtocol 是 URLSession 的底层拦截点（模块十一第 4 节提过的日志/Mock 手法）——
-// 拦下指定 URL 的请求，不上网，直接喂本地造的 SSE 字节流。拦截器只装进专用 session，
-// 不碰全局 URLSession.shared，别处请求零影响。
+// URLProtocol 是什么：URLSession 加载体系的底层拦截点（官方称呼「协议处理器」），
+// 作用 ≈ axios 的 interceptor + 前端 Service Worker：请求还没出网络层就被截走，
+// 可以记录、改写、或干脆自己伪造一份响应回去。URLSession 处理 http/https 靠的也是
+// 内置的 URLProtocol 子类——我们只是往这条处理链上「插队」。
+// 常见五场景：① 单元测试 Mock（最主流，≈ msw；老牌库 OHHTTPStubs 内核就是它）
+// ② 全局网络日志/监控（「iOS 没有 DevTools Network 面板」的代码层方案）
+// ③ 环境切换/请求改写（换 host、统一加 header） ④ 弱网模拟（sleep 再回数据验 loading 态）
+// ⑤ 离线缓存（先查本地命中直接回报）。
+// ⚠️ 坑1：只对「用该 configuration 创建的 session」生效——第三方库内部用自己的 session
+// 时改全局没用，得拿到它的 configuration 再注入；
+// ⚠️ 坑2：canInit 对同一条请求可能被问多次（重定向、缓存查询各问一遍），里面别做重活。
 enum MockSSEServer {
-    // 专用 session：APIClient 没动，只服务本 Demo 的 SSE 请求
+    // 专用 session：拦截器只装在这里，不碰全局 URLSession.shared（shared 是全局单例，
+    // 污染它 = 全 App 所有请求都被拦，演示就乱套了）；APIClient 没动，零影响
     static let session: URLSession = {
+        // static let = { ... }()：IIFE（立即执行闭包）——首次访问时跑一次，之后全局复用同一个 session
         let config = URLSessionConfiguration.default
+        // protocolClasses：URLSession 的「处理器清单」——每个请求发出前，URLSession 会从头
+        // 到尾问清单里的每个处理器「这条请求归你管吗？」(canInit)，谁先说 true 谁接管。
+        // 把 Mock 插到最前面：假域名请求先撞上 Mock 直接接管（不上网），其他请求放行给系统默认处理器
         config.protocolClasses = [MockSSEProtocol.self] + (config.protocolClasses ?? [])
         return URLSession(configuration: config)
     }()
@@ -383,16 +395,23 @@ enum MockSSEServer {
     ]
 }
 
+// URLProtocol 子类的完整骨架就四步：canInit（是否接管）→ canonicalRequest（规范化）
+// → startLoading（扮演服务器干活）→ stopLoading（被取消时清理）
 final class MockSSEProtocol: URLProtocol {
-    // canInit：所有请求先过这里，返回 true = 这条请求归我接管
+    // ① 每条请求先过这：返回 true = 这条请求由我全权接管（不走系统网络栈）
     override class func canInit(with request: URLRequest) -> Bool {
         request.url?.host == "mock.ai.local"      // 只拦假域名，其他请求照常走网络
     }
+    // ② 规范化请求：一般原样返回；常用于按 URL 去重做缓存 key
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
+    // ③ 真正干活：接管后在这里「扮演服务器」——通过 client 回报模拟的响应。
+    //   client 是 URLSession 塞给你的回报通道，完整响应三步：
+    //   didReceive（响应头）→ didLoad（响应体，可调多次 = 流式）→ didFinishLoading（结束）。
+    //   真实转发场景：这里用另一个 session 发真请求，把结果原样回报——「中间人」
     override func startLoading() {
         Task {
-            // 模拟响应头（SSE 响应的 Content-Type 是 text/event-stream）
+            // 回报响应头（SSE 响应的 Content-Type 是 text/event-stream）
             let response = HTTPURLResponse(url: MockSSEServer.url,
                                            statusCode: 200,
                                            httpVersion: "HTTP/1.1",
@@ -400,17 +419,20 @@ final class MockSSEProtocol: URLProtocol {
             client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
 
             for word in MockSSEServer.reply {
+                // didLoad 调多次 = 流式喂数据：每次一小段，SSEClient 那边完全感知不到对面是假的
+                // （这正是 Mock SSE 能逐词「流式」骗过 bytes(for:) 的原理）
                 // 逐条喂事件：data: 一行 + 空行 = 一条完整 SSE 事件（协议边界）
                 let event = "data: \(word)\n\n"
                 client?.urlProtocol(self, didLoad: event.data(using: .utf8)!)
-                try? await Task.sleep(for: .seconds(0.5))   // 模拟生成耗时
+                try? await Task.sleep(for: .seconds(0.1))   // 模拟生成耗时
             }
             client?.urlProtocol(self, didLoad: "data: [DONE]\n\n".data(using: .utf8)!)   // 结束标记
-            client?.urlProtocolDidFinishLoading(self)
+            client?.urlProtocolDidFinishLoading(self)   // 传输结束信号
         }
     }
 
-    override func stopLoading() {}    // 被取消时无需清理（Mock 无真实连接）
+    // ④ 请求被取消时回调：清理计时器/连接，漏写 = 泄漏（Mock 无真实连接，无需清理）
+    override func stopLoading() {}
 }
 
 // 让 Mock session 和 SSEClient 串起来：消费侧 startSSE() 里换成这个即可（已内联）
