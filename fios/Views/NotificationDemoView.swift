@@ -45,7 +45,7 @@ final class LoginService {
 
 // ============ 订阅者 1：角标管理（永久存活，App 级订阅）============
 
-// MARK: - 订阅者 1（BadgeManager：角标，App 级永久订阅）
+// MARK: - 订阅者 1（BadgeManager：角标，App 级永久订阅）11
 
 final class BadgeManager {
     // NSObjectProtocol：addObserver 返回的「观察者令牌」（opaque 类型），
