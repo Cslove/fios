@@ -9,6 +9,9 @@ struct SystemDemoView: View {
                 NavigationLink("9. 现代 Swift 并发（async/await / Task / @MainActor / actor）") {
                     ConcurrencyDemoView()   // 模块九：并发语法、主线程守护、actor 安全计数
                 }
+                NavigationLink("11. 网络请求与数据流（URLSession / 泛型封装 / 错误分支）") {
+                    NetworkingDemoView()    // 模块十一：六节全流程；核心网络层在 Networking 包
+                }
                 NavigationLink("10. NotificationCenter（一对多广播 + 订阅者生命周期）") {
                     NotificationDemoView()  // 模块十第 6 节：一次登录广播三处响应 + deinit 注销 + 系统通知
                 }
