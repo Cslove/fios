@@ -1,0 +1,8 @@
+# Xcode 个人用户状态（断点、scheme 管理等，纯本机数据）
+xcuserdata/
+
+# macOS
+.DS_Store
+
+# Swift Package Manager
+.build/
