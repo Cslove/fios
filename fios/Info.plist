@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- 定位两把钥匙要配齐：WhenInUse 请求查 WhenInUse key；Always 请求还要两个都在。
+	     只放 Always key 时 requestWhenInUseAuthorization() 静默失败、弹窗不出现 -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>推荐商品地址</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

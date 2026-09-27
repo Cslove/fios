@@ -24,6 +24,9 @@ struct SystemDemoView: View {
                 NavigationLink("s11. WebView Hybrid（双向通信 + 事件链）") {
                     WebHybridDemoView()   // 远程页导航事件链 + 内嵌测试页 JS 双向通信闭环
                 }
+                NavigationLink("s3. 权限与隐私（定位权限全流程）") {
+                    LocationDemoView()    // Info 声明 → 权限弹窗 → 状态流转 → 定位成功/失败回调
+                }
                 NavigationLink("sw7. 自定义与样式（Shape/ButtonStyle/Canvas…）") {
                     StylesDemoView()      // 五个子 demo：画形/按压/卡片样式/图表时钟/特效五件套
                 }
